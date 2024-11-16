@@ -22,7 +22,7 @@ kubectl delete -f test-http-deps.yaml; kubectl delete -f test-http-ingress.yaml
 
 
 cd ../docker-images
-export VERSION=8
+export VERSION=10
 docker build fast-api-dcv -t birgelee/fast-api-dcv:$VERSION
 docker build fast-api-caa -t birgelee/fast-api-caa:$VERSION
 docker build fast-api-test -t birgelee/fast-api-test:$VERSION
@@ -73,3 +73,20 @@ curl -k --resolve "testing.local:443:127.0.0.1" -i https://testing.local/mpic \
 }' \
       -X POST \
       "https://testing.local/mpic"
+
+
+
+curl -k --resolve "testing.local:443:127.0.0.1" -i https://testing.local/mpic \
+      -d '{
+  "check_type": "dcv",
+  "domain_or_ip_target": "ifconfig.me",
+  "dcv_check_parameters": {
+  "validation_method": "http-generic",
+  "validation_details": {
+    "http_token_path": "/",
+    "challenge_value": "test"
+    }
+  }
+}' \
+      -X POST \
+      "$(hatch run ./get_api_url.py)/mpic"
