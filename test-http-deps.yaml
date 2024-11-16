@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: http-backend
+  name: http-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: http-backend
+  template:
+    metadata:
+      labels:
+        app: http-backend
+    spec:
+      containers:
+      - image: birgelee/fast-api-test:10   # Edit this for your reponame
+        name: http-backend
+        env:
+        - name: perspective_names
+          value: "arin.test1|apnic.test2"
+        - name: dcv_service_names
+          value: "test1dcv|test2dcv"
+        - name: caa_service_names
+          value: "test1caa|test2caa"
+        - name: default_perspective_count
+          value: "2"
+        - name: enforce_distinct_rir_regions
+          value: "1"
+        - name: hash_secret
+          value: "abc"
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 100Mi
+            cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: http-backend
+  name: http-backend
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: http-backend
+  type: ClusterIP

@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test2caa
+  name: test2caa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test2caa
+  template:
+    metadata:
+      labels:
+        app: test2caa
+    spec:
+      containers:
+      - image: birgelee/fast-api-caa:5   # Edit this for your reponame
+        name: test2caa
+        env:
+        - name: rir_region
+          value: "arin"
+        - name: code
+          value: "test2"
+        - name: default_caa_domains
+          value: "caatestsuite.com"
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 100Mi
+            cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test2caa
+  name: test2caa
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: test2caa
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test2dcv
+  name: test2dcv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test2dcv
+  template:
+    metadata:
+      labels:
+        app: test2dcv
+    spec:
+      containers:
+      - image: birgelee/fast-api-dcv:5   # Edit this for your reponame
+        name: test2dcv
+        env:
+        - name: rir_region
+          value: "arin"
+        - name: code
+          value: "test2"
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 100Mi
+            cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test2dcv
+  name: test2dcv
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: test2dcv
+  type: ClusterIP

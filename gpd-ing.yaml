@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ annotations:
+   nginx.ingress.kubernetes.io/ssl-redirect: "true"
+   nginx.ingress.kubernetes.io/grpc-backend: "true"
+ name: gpd-ingress
+spec:
+ ingressClassName: "nginx"
+ rules:
+    - host: testing.local 
+      http:
+        paths:
+         - path: /mpic
+           pathType: Prefix
+           backend:
+            service:
+              name: gpd
+              port:
+                name: grpc
+ tls:
+  - secretName: foo-secret
+    hosts:
+       - testing.local 
+

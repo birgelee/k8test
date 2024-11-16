@@ -1,0 +1,75 @@
+minikube addons enable ingress
+
+kubernetes.io/ingress.class: "nginx"
+   
+
+
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj "/CN=testing.local"
+
+kubectl apply -f gpd-dep.yaml
+kubectl apply -f gpd-svc.yaml      
+kubectl apply -f gpd-ing.yaml
+
+
+curl -k --resolve "testing.local:443:127.0.0.1" -i https://testing.local/mpic
+
+minikube tunnel
+
+kubectl logs ingress-nginx-controller-bc57996ff-f27w9 -n ingress-nginx
+kubectl delete -f test-http-deps.yaml; kubectl delete -f test-http-ingress.yaml
+
+
+
+cd ../docker-images
+export VERSION=8
+docker build fast-api-dcv -t birgelee/fast-api-dcv:$VERSION
+docker build fast-api-caa -t birgelee/fast-api-caa:$VERSION
+docker build fast-api-test -t birgelee/fast-api-test:$VERSION
+docker push birgelee/fast-api-dcv:$VERSION
+docker push birgelee/fast-api-caa:$VERSION
+docker push birgelee/fast-api-test:$VERSION
+cd ../k8test
+kubectl apply -f test-http-deps.yaml; kubectl apply -f test-http-ingress.yaml; kubectl apply -f test1.yaml; kubectl apply -f test2.yaml
+
+sudo minikube tunnel
+
+Building image commands:
+
+export VERSION=7
+docker build fast-api-dcv -t birgelee/fast-api-dcv:$VERSION
+docker build fast-api-caa -t birgelee/fast-api-caa:$VERSION
+docker build fast-api-test -t birgelee/fast-api-test:$VERSION
+docker push birgelee/fast-api-dcv:$VERSION
+docker push birgelee/fast-api-caa:$VERSION
+docker push birgelee/fast-api-test:$VERSION
+
+
+Testing commands:
+docker compose up --no-deps --build
+
+time curl -H 'Content-Type: application/json' \
+      -d '{
+  "check_type": "caa",
+  "domain_or_ip_target": "ipv6only.caatestsuite.com"
+}' \
+      -X POST \
+      "localhost/mpic"
+
+time curl -H 'Content-Type: application/json' \
+      -d '{
+  "check_type": "caa",
+  "domain_or_ip_target": "ipv6only.caatestsuite.com"
+}' \
+      -X POST \
+      "localhost:81/dcv"
+
+
+curl -k --resolve "testing.local:443:127.0.0.1" -i https://testing.local/mpic \
+      -H 'Content-Type: application/json' \
+      -d '{
+  "check_type": "caa",
+  "domain_or_ip_target": "ipv6only.caatestsuite.com"
+}' \
+      -X POST \
+      "https://testing.local/mpic"
